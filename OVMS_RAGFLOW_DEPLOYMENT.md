@@ -14,12 +14,12 @@ Date: 2026-07-21
 
 （1）提前安装GPU/NPU相关驱动，并验证OpenVINO环境。
 ```
-python -m venv openvino_env
+python3 -m venv openvino_env
 source openvino_env/bin/activate
-python -m pip install --upgrade pip
+python3 -m pip install --upgrade pip
 pip install openvino
 #在openvino_env环境中检查是否识别iGPU和NPU
-python -c "from openvino import Core; print(Core().available_devices)"
+python3 -c "from openvino import Core; print(Core().available_devices)"
 
 ['CPU','GPU','NPU']
 ```
@@ -89,7 +89,6 @@ https://www.modelscope.cn/models/kiwicoco/bge-reranker-large/files
 │   ├── chat_template.jinja
 │   ├── config.json
 │   ├── generation_config.json
-│   ├── graph.pbtxt
 │   ├── openvino_detokenizer.bin
 │   ├── openvino_detokenizer.xml
 │   ├── openvino_language_model.bin
