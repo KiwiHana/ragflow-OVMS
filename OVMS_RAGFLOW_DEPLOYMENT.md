@@ -12,7 +12,7 @@ Date: 2026-07-21
 
 ### 0.1 准备工作
 
-（1）提前安装GPU/NPU相关驱动，并验证OpenVINO。
+（1）提前安装GPU/NPU相关驱动，并验证OpenVINO环境。
 ```
 python -m venv openvino_env
 source openvino_env/bin/activate
@@ -129,6 +129,21 @@ curl -I http://127.0.0.1:8080
 ```
 
 若以上 4 个检查均返回正常，即可在浏览器里打开http://127.0.0.1:8080 RAGFlow Web 中直接使用 OVMS 模型。
+
+### 0.4 查看GPU，NPU使用情况（Option）
+查看GPU状态。
+```
+sudo apt install xpu-smi
+sudo watch -n 1 xpu-smi stats -d 0
+```
+如果安装不成功，解决方案参考：https://dgpu-docs.intel.com/installation-guides/installing-packages-from-the-intel-ppa.html
+
+查看NPU状态。
+```
+git clone https://github.com/DMontgomery40/intel-npu-top.git
+cd intel-npu-top
+python3 intel-npu-top.py
+```
 
 ## 1. 参考来源与当前结论
 
