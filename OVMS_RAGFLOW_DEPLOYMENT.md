@@ -10,9 +10,7 @@ Date: 2026-07-21
 
 ## 1. 参考来源与当前结论
 
-参考文件：`bgeNPU-35B-OVMS-start.txt`
-
-该文件给出的实际启动方式是三路 OVMS 服务：
+给出的实际启动方式是三路 OVMS 服务：
 
 - Embedding: 8000
 - Rerank: 8001
@@ -20,14 +18,14 @@ Date: 2026-07-21
 
 当前机器上对应脚本：
 
-- `/home/q/models/BAAI/run-bge-large-zh-v1.5-docker.sh`
-- `/home/q/models/BAAI/run-bge-reranker-large-docker.sh`
-- `/home/q/ov/run-35b-docker.sh`
+- `~/models/run-bge-large-zh-v1.5-docker.sh`
+- `~/models/run-bge-reranker-large-docker.sh`
+- `~/models/run-35b-docker.sh`
 
 当前模型配置文件：
 
-- `/home/q/models/config.json` -> `bge-large-zh-v1.5-int8-ov`
-- `/home/q/models/config-reranker.json` -> `bge-reranker-large-int8-ov`
+- `~/models/config.json` -> `bge-large-zh-v1.5-int8-ov`
+- `~/models/config-reranker.json` -> `bge-reranker-large-int8-ov`
 
 注意：
 
@@ -45,21 +43,21 @@ Date: 2026-07-21
 ### 2.1 启动 Embedding OVMS（8000）
 
 ```bash
-cd /home/q/models/BAAI
+cd ~/models
 ./run-bge-large-zh-v1.5-docker.sh
 ```
 
 ### 2.2 启动 Rerank OVMS（8001）
 
 ```bash
-cd /home/q/models/BAAI
+cd ~/models
 ./run-bge-reranker-large-docker.sh
 ```
 
 ### 2.3 启动 Chat OVMS（8002）
 
 ```bash
-cd /home/q/ov
+cd ~/models
 ./run-35b-docker.sh
 ```
 
@@ -114,8 +112,8 @@ curl http://127.0.0.1:8002/v3/models
 
 已修改文件：
 
-- `/home/q/ragflow/docker/.env`
-- `/home/q/ragflow/docker/service_conf.yaml.template`
+- `~/ragflow/docker/.env`
+- `~/ragflow/docker/service_conf.yaml.template`
 
 ### 4.1 docker/.env
 
@@ -153,14 +151,14 @@ OVMS_RERANK_MODEL=bge-reranker-large-int8-ov
 在仓库目录执行：
 
 ```bash
-cd /home/q/ragflow/docker
+cd ~/ragflow/docker
 sudo docker compose -f docker-compose.yml up -d
 ```
 
 检查状态：
 
 ```bash
-cd /home/q/ragflow/docker
+cd ~/ragflow/docker
 sudo docker compose -f docker-compose.yml ps
 ```
 
@@ -181,7 +179,7 @@ curl http://127.0.0.1:8001/v3/models/bge-reranker-large-int8-ov
 ### 6.2 容器内验证到宿主机网络
 
 ```bash
-cd /home/q/ragflow/docker
+cd ~/ragflow/docker
 sudo docker exec docker-ragflow-cpu-1 sh -lc 'curl -sS --max-time 8 http://host.docker.internal:8002/v3/models'
 sudo docker exec docker-ragflow-cpu-1 sh -lc 'curl -sS --max-time 8 http://host.docker.internal:8000/v3/models/bge-large-zh-v1.5-int8-ov'
 sudo docker exec docker-ragflow-cpu-1 sh -lc 'curl -sS --max-time 8 http://host.docker.internal:8001/v3/models/bge-reranker-large-int8-ov'
@@ -190,7 +188,7 @@ sudo docker exec docker-ragflow-cpu-1 sh -lc 'curl -sS --max-time 8 http://host.
 ### 6.3 RAGFlow 日志确认
 
 ```bash
-cd /home/q/ragflow/docker
+cd ~/ragflow/docker
 sudo docker logs --tail 200 docker-ragflow-cpu-1
 ```
 
@@ -280,7 +278,7 @@ sudo docker logs --tail 200 docker-ragflow-cpu-1
 排查命令：
 
 ```bash
-cd /home/q/ragflow/docker
+cd ~/ragflow/docker
 sudo docker exec docker-mysql-1 mysql -uroot -pinfini_rag_flow -Drag_flow -e "SELECT i.instance_name,p.provider_name,i.extra FROM tenant_model_instance i JOIN tenant_model_provider p ON i.provider_id=p.id WHERE p.provider_name='OpenAI-API-Compatible';"
 sudo docker exec docker-mysql-1 mysql -uroot -pinfini_rag_flow -Drag_flow -e "SELECT tm.model_name,tm.model_type,p.provider_name,i.instance_name,tm.status FROM tenant_model tm JOIN tenant_model_provider p ON tm.provider_id=p.id JOIN tenant_model_instance i ON tm.instance_id=i.id WHERE p.provider_name='OpenAI-API-Compatible' ORDER BY i.instance_name,tm.model_type,tm.model_name;"
 sudo docker exec docker-mysql-1 mysql -uroot -pinfini_rag_flow -Drag_flow -e "SELECT id,llm_id,embd_id,rerank_id FROM tenant;"
@@ -302,7 +300,7 @@ sudo docker exec docker-mysql-1 mysql -uroot -pinfini_rag_flow -Drag_flow -e "SE
 先修复路由（必须做）：
 
 ```bash
-cd /home/q/ragflow/docker
+cd ~/ragflow/docker
 
 # 1) 创建独立 rerank 实例并绑定到 8001
 sudo docker exec docker-mysql-1 mysql -uroot -pinfini_rag_flow -Drag_flow -e "SET @provider_id := (SELECT id FROM tenant_model_provider WHERE provider_name='OpenAI-API-Compatible' LIMIT 1); SET @rerank_instance_id := 'f4c8b972865c11f1ad31fbcda4fd1fe5'; INSERT INTO tenant_model_instance (id,create_time,create_date,update_time,update_date,instance_name,provider_id,api_key,status,extra) SELECT @rerank_instance_id, UNIX_TIMESTAMP()*1000, NOW(), UNIX_TIMESTAMP()*1000, NOW(), 'OVMS-Rerank', @provider_id, 'unused', 'active', '{\"base_url\": \"http://host.docker.internal:8001/v3\", \"region\": \"default\"}' FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM tenant_model_instance WHERE id=@rerank_instance_id OR (provider_id=@provider_id AND instance_name='OVMS-Rerank'));"
@@ -323,7 +321,7 @@ sudo docker restart docker-ragflow-cpu-1
 核验命令：
 
 ```bash
-cd /home/q/ragflow/docker
+cd ~/ragflow/docker
 sudo docker exec docker-mysql-1 mysql -uroot -pinfini_rag_flow -Drag_flow -e "SELECT id,llm_id,embd_id,rerank_id FROM tenant;"
 sudo docker exec docker-mysql-1 mysql -uroot -pinfini_rag_flow -Drag_flow -e "SELECT id,name,search_config FROM search WHERE tenant_id='c2fd45ae843d11f1a059698ef4239658' ORDER BY update_time DESC LIMIT 20;"
 curl -sS -X POST http://127.0.0.1:8001/v3/rerank -H 'Content-Type: application/json' -d '{"model":"bge-reranker-large-int8-ov","query":"什么是RAG","documents":["RAG是检索增强生成","天气很好"]}'
@@ -358,7 +356,7 @@ curl -sS -X POST http://127.0.0.1:8001/v3/rerank -H 'Content-Type: application/j
 执行命令：
 
 ```bash
-cd /home/q/ragflow/docker
+cd ~/ragflow/docker
 sudo docker exec docker-mysql-1 mysql -uroot -pinfini_rag_flow -Drag_flow -e "UPDATE tenant SET rerank_id='', tenant_rerank_id=NULL WHERE id='c2fd45ae843d11f1a059698ef4239658'; UPDATE dialog SET rerank_id='', tenant_rerank_id=NULL WHERE tenant_id='c2fd45ae843d11f1a059698ef4239658'; SELECT id,llm_id,embd_id,rerank_id FROM tenant WHERE id='c2fd45ae843d11f1a059698ef4239658';"
 ```
 
@@ -398,7 +396,7 @@ sudo docker exec docker-mysql-1 mysql -uroot -pinfini_rag_flow -Drag_flow -e "UP
 快速核验：
 
 ```bash
-cd /home/q/ragflow/docker
+cd ~/ragflow/docker
 sudo docker exec docker-mysql-1 mysql -uroot -pinfini_rag_flow -Drag_flow -e "SELECT id,llm_id,embd_id,rerank_id FROM tenant;"
 sudo docker exec docker-mysql-1 mysql -uroot -pinfini_rag_flow -Drag_flow -e "SELECT id,tenant_id,name,embd_id FROM knowledgebase WHERE tenant_id='c2fd45ae843d11f1a059698ef4239658';"
 sudo docker exec docker-mysql-1 mysql -uroot -pinfini_rag_flow -Drag_flow -e "SELECT tm.model_name,tm.model_type,i.instance_name,i.extra FROM tenant_model tm JOIN tenant_model_provider p ON tm.provider_id=p.id JOIN tenant_model_instance i ON tm.instance_id=i.id WHERE p.provider_name='OpenAI-API-Compatible' ORDER BY tm.model_type,tm.model_name;"
@@ -417,12 +415,12 @@ PY"
 
 ```bash
 # 1) 启动 OVMS
-cd /home/q/models/BAAI && ./run-bge-large-zh-v1.5-docker.sh
-cd /home/q/models/BAAI && ./run-bge-reranker-large-docker.sh
-cd /home/q/ov && ./run-35b-docker.sh
+cd ~/models && ./run-bge-large-zh-v1.5-docker.sh
+cd ~/models && ./run-bge-reranker-large-docker.sh
+cd ~/models && ./run-35b-docker.sh
 
 # 2) 启动/更新 RAGFlow
-cd /home/q/ragflow/docker && sudo docker compose -f docker-compose.yml up -d
+cd ~/ragflow/docker && sudo docker compose -f docker-compose.yml up -d
 
 # 3) 核验
 curl http://127.0.0.1:8000/v3/models/bge-large-zh-v1.5-int8-ov
@@ -439,7 +437,7 @@ curl -I http://127.0.0.1:8080
 
 ### 9.1 替换前检查清单
 
-目标目录（示例）：`/home/q/models/BAAI/<your-rerank-model-dir>`
+目标目录（示例）：`~/models/BAAI/<your-rerank-model-dir>`
 
 至少应包含：
 
@@ -454,7 +452,7 @@ curl -I http://127.0.0.1:8080
 快速检查：
 
 ```bash
-MODEL_DIR=/home/q/models/BAAI/<your-rerank-model-dir>
+MODEL_DIR=~/models/BAAI/<your-rerank-model-dir>
 ls -1 "$MODEL_DIR"
 
 # 1) 文件是否齐全
@@ -478,7 +476,7 @@ grep -n "logits" "$MODEL_DIR/openvino_model.xml" || echo "WARN: no logits string
 
 ```bash
 MODEL_NAME=bge-reranker-large-int8-ov
-MODEL_DIR=/home/q/models/BAAI/<your-rerank-model-dir>
+MODEL_DIR=~/models/BAAI/<your-rerank-model-dir>
 PORT=8011
 
 sudo docker run -d --rm --name ovms-rerank-candidate \
@@ -531,14 +529,14 @@ curl -sS -X POST http://127.0.0.1:${PORT}/v3/rerank \
 4. 重启 RAGFlow：
 
 ```bash
-cd /home/q/ragflow/docker
+cd ~/ragflow/docker
 sudo docker restart docker-ragflow-cpu-1
 ```
 
 ### 9.5 上线后回归检查
 
 ```bash
-cd /home/q/ragflow/docker
+cd ~/ragflow/docker
 
 # 1) 配置面确认（tenant/dialog/search）
 sudo docker exec docker-mysql-1 mysql -uroot -pinfini_rag_flow -Drag_flow -e "SELECT id,rerank_id FROM tenant;"
