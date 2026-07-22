@@ -612,16 +612,27 @@ class Dealer:
             bool(rerank_mdl),
         )
 
+        rerank_failed = False
         if rerank_mdl and sres.total > 0:
-            sim, tsim, vsim = self.rerank_by_model(
-                rerank_mdl,
-                sres,
-                question,
-                term_similarity_weight,
-                vector_similarity_weight,
-                rank_feature=rank_feature,
-            )
-        else:
+            try:
+                sim, tsim, vsim = self.rerank_by_model(
+                    rerank_mdl,
+                    sres,
+                    question,
+                    term_similarity_weight,
+                    vector_similarity_weight,
+                    rank_feature=rank_feature,
+                )
+            except Exception as e:
+                rerank_failed = True
+                logging.exception(
+                    "[Search] external rerank failed; falling back to base ranking: trace_id=%s kb_count=%s err=%s",
+                    trace_id,
+                    len(kb_ids),
+                    e,
+                )
+
+        if (not rerank_mdl) or rerank_failed:
             if settings.DOC_ENGINE_INFINITY:
                 # Don't need rerank here since Infinity normalizes each way score before fusion.
                 sim = [sres.field[id].get("_score", 0.0) for id in sres.ids]

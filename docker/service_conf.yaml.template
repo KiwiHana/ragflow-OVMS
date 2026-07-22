@@ -69,12 +69,27 @@ file_syncer:
   max_concurrent_syncs: 4
   sync_interval: 3
 user_default_llm:
+  factory: 'OpenAI-API-Compatible'
+  api_key: '${OVMS_API_KEY:-unused}'
+  base_url: '${OVMS_CHAT_BASE_URL:-http://host.docker.internal:8002/v3}'
   default_models:
+    chat_model:
+      name: '${OVMS_CHAT_MODEL:-Qwen3.6-35B-A3B-ov}'
+      factory: 'OpenAI-API-Compatible'
+      api_key: '${OVMS_API_KEY:-unused}'
+      base_url: '${OVMS_CHAT_BASE_URL:-http://host.docker.internal:8002/v3}'
     embedding_model:
-      api_key: 'xxx'
-      base_url: 'http://${TEI_HOST}:80'
+      name: '${OVMS_EMBEDDING_MODEL:-bge-large-zh-v1.5-int8-ov}'
+      factory: 'OpenAI-API-Compatible'
+      api_key: '${OVMS_API_KEY:-unused}'
+      base_url: '${OVMS_EMBEDDING_BASE_URL:-http://host.docker.internal:8000/v3}'
+    rerank_model:
+      name: '${OVMS_RERANK_MODEL:-bge-reranker-large-int8-ov}'
+      factory: 'OpenAI-API-Compatible'
+      api_key: '${OVMS_API_KEY:-unused}'
+      base_url: '${OVMS_RERANK_BASE_URL:-http://host.docker.internal:8001/v3}'
 # postgres:
-#   name: '${POSTGRES_DBNAME:-rag_flow}'
+#   name: '${POSTGRES_DBNAME:-rag_fw}'
 #   user: '${POSTGRES_USER:-rag_flow}'
 #   password: '${POSTGRES_PASSWORD:-infini_rag_flow}'
 #   host: '${POSTGRES_HOST:-postgres}'
