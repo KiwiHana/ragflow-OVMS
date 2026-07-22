@@ -1,4 +1,4 @@
-# RAGFlow + OVMS 部署手册（基于本机实测）
+# RAGFlow + OVMS 部署手册
 
 Date: 2026-07-21
 
@@ -7,6 +7,13 @@ Date: 2026-07-21
 - 启动 OVMS 模型服务（Embedding / Rerank / Chat）
 - 让 RAGFlow 正确接入 OVMS（多端口）
 - 验证 RAGFlow + OVMS 可用
+- Ubuntu 24.04
+
+## 0. Quick start
+
+### 0.1 准备工作
+
+提前安装GPU相关驱动，$ clinfo -l
 
 ## 1. 参考来源与当前结论
 
