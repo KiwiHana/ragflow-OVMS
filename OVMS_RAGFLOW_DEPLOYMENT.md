@@ -2,18 +2,133 @@
 
 Date: 2026-07-21
 
-本文档基于当前工作区与本机脚本实测整理，目标是完成：
+本文档基于Ubuntu 24.04（kernel大于等于6.17）实测整理，目标是完成：
 
 - 启动 OVMS 模型服务（Embedding / Rerank / Chat）
 - 让 RAGFlow 正确接入 OVMS（多端口）
 - 验证 RAGFlow + OVMS 可用
-- Ubuntu 24.04
 
 ## 0. Quick start
 
 ### 0.1 准备工作
 
-提前安装GPU相关驱动，$ clinfo -l
+（1）提前安装GPU/NPU相关驱动，并验证OpenVINO。
+```
+python -m venv openvino_env
+source openvino_env/bin/activate
+python -m pip install --upgrade pip
+pip install openvino
+#在openvino_env环境中检查是否识别iGPU和NPU
+python -c "from openvino import Core; print(Core().available_devices)"
+
+['CPU','GPU','NPU']
+```
+
+（2）验证docker正常使用。
+```
+sudo docker pull hello-world
+```
+
+### 0.2 下载模型和代码文件
+
+```
+cd ~
+
+git clone https://github.com/KiwiHana/ragflow-OVMS.git ragflow
+
+cp -r ragflow/models ~/
+
+cd ~/models
+```
+
+下载Qwen3.6-35B-A3B-int4-ov到~/models，并
+```
+mv Qwen3.6-35B-A3B-int4-ov Qwen3.6-35B-A3B-ov
+```
+
+下载地址：https://huggingface.co/OpenVINO/Qwen3.6-35B-A3B-int4-ov ，或者 https://www.modelscope.cn/models/OpenVINO/Qwen3.6-35B-A3B-int4-ov
+
+下载bge-large-zh-v1.5和bge-reranker-large到~/models/BAAI
+
+下载地址：
+https://www.modelscope.cn/models/kiwicoco/bge-large-zh-v1.5/files
+
+https://www.modelscope.cn/models/kiwicoco/bge-reranker-large/files
+
+验证OVMS所需要的文件准备完毕。
+```
+~$ tree ~/models
+~/models
+├── BAAI
+│   ├── bge-large-zh-v1.5
+│   │   ├── config.json
+│   │   ├── graph.pbtxt
+│   │   ├── openvino_config.json
+│   │   ├── openvino_model.bin
+│   │   ├── openvino_model.xml
+│   │   ├── openvino_tokenizer.bin
+│   │   ├── openvino_tokenizer.xml
+│   │   ├── tokenizer_config.json
+│   │   └── tokenizer.json
+│   ├── bge-reranker-large
+│   │   ├── config.json
+│   │   ├── graph.pbtxt
+│   │   ├── openvino_config.json
+│   │   ├── openvino_model.bin
+│   │   ├── openvino_model.xml
+│   │   ├── openvino_tokenizer.bin
+│   │   ├── openvino_tokenizer.xml
+│   │   ├── tokenizer_config.json
+│   │   └── tokenizer.json
+├── config.json
+├── config-reranker.json
+├── run-bge-large-zh-v1.5-docker.sh
+├── run-bge-reranker-large-docker.sh
+├── run-35b-docker.sh
+├── Qwen3.6-35B-A3B-ov
+│   ├── chat_template.jinja
+│   ├── config.json
+│   ├── generation_config.json
+│   ├── graph.pbtxt
+│   ├── openvino_detokenizer.bin
+│   ├── openvino_detokenizer.xml
+│   ├── openvino_language_model.bin
+│   ├── openvino_language_model.xml
+│   ├── openvino_text_embeddings_model.bin
+│   ├── openvino_text_embeddings_model.xml
+│   ├── openvino_tokenizer.bin
+│   ├── openvino_tokenizer.xml
+│   ├── openvino_vision_embeddings_merger_model.bin
+│   ├── openvino_vision_embeddings_merger_model.xml
+│   ├── openvino_vision_embeddings_model.bin
+│   ├── openvino_vision_embeddings_model.xml
+│   ├── openvino_vision_embeddings_pos_model.bin
+│   ├── openvino_vision_embeddings_pos_model.xml
+│   ├── preprocessor_config.json
+│   ├── processor_config.json
+│   ├── tokenizer_config.json
+│   └── tokenizer.json
+```
+
+### 0.3. 一键执行清单
+
+```bash
+# 1) 启动 OVMS
+cd ~/models && ./run-bge-large-zh-v1.5-docker.sh
+cd ~/models && ./run-bge-reranker-large-docker.sh
+cd ~/models && ./run-35b-docker.sh
+
+# 2) 启动/更新 RAGFlow
+cd ~/ragflow/docker && sudo docker compose -f docker-compose.yml up -d
+
+# 3) 核验
+curl http://127.0.0.1:8000/v3/models/bge-large-zh-v1.5-int8-ov
+curl http://127.0.0.1:8001/v3/models/bge-reranker-large-int8-ov
+curl http://127.0.0.1:8002/v3/models
+curl -I http://127.0.0.1:8080
+```
+
+若以上 4 个检查均返回正常，即可在浏览器里打开http://127.0.0.1:8080 RAGFlow Web 中直接使用 OVMS 模型。
 
 ## 1. 参考来源与当前结论
 
@@ -417,162 +532,3 @@ PY"
 
 - `DocumentService.get_embd_id(...)` 输出 `bge-large-zh-v1.5-int8-ov@OVMS-Embedding@OpenAI-API-Compatible`。
 - 重试后的新任务不再出现 `graph definition not found`，embedding 可正常绑定与解析。
-
-## 8. 一键执行清单
-
-```bash
-# 1) 启动 OVMS
-cd ~/models && ./run-bge-large-zh-v1.5-docker.sh
-cd ~/models && ./run-bge-reranker-large-docker.sh
-cd ~/models && ./run-35b-docker.sh
-
-# 2) 启动/更新 RAGFlow
-cd ~/ragflow/docker && sudo docker compose -f docker-compose.yml up -d
-
-# 3) 核验
-curl http://127.0.0.1:8000/v3/models/bge-large-zh-v1.5-int8-ov
-curl http://127.0.0.1:8001/v3/models/bge-reranker-large-int8-ov
-curl http://127.0.0.1:8002/v3/models
-curl -I http://127.0.0.1:8080
-```
-
-若以上 4 个检查均返回正常，即可在 RAGFlow Web 中直接使用 OVMS 模型。
-
-## 9. 替换可用 Rerank 导出（模板）
-
-本节用于“把当前不兼容的 reranker 导出替换成可用于 `/v3/rerank` 的导出”。
-
-### 9.1 替换前检查清单
-
-目标目录（示例）：`~/models/BAAI/<your-rerank-model-dir>`
-
-至少应包含：
-
-- `openvino_model.xml`
-- `openvino_model.bin`
-- `openvino_tokenizer.xml`
-- `openvino_tokenizer.bin`
-- `tokenizer.json`
-- `config.json`
-- `graph.pbtxt`（若由 `--task rerank` 自动生成，可不手工提供）
-
-快速检查：
-
-```bash
-MODEL_DIR=~/models/BAAI/<your-rerank-model-dir>
-ls -1 "$MODEL_DIR"
-
-# 1) 文件是否齐全
-test -f "$MODEL_DIR/openvino_model.xml" && echo ok_model_xml
-test -f "$MODEL_DIR/openvino_model.bin" && echo ok_model_bin
-test -f "$MODEL_DIR/openvino_tokenizer.xml" && echo ok_tok_xml
-test -f "$MODEL_DIR/openvino_tokenizer.bin" && echo ok_tok_bin
-
-# 2) 仅用于快速预警：若完全没有 logits 关键词，通常高风险
-grep -n "logits" "$MODEL_DIR/openvino_model.xml" || echo "WARN: no logits string in xml"
-```
-
-说明：
-
-- `grep logits` 不是绝对判定，但在当前问题场景下很有参考价值。
-- 真正可用性以 `/v3/rerank` 实际请求返回 `results[index,relevance_score]` 为准。
-
-### 9.2 OVMS 启动模板（独立端口）
-
-建议先在临时端口做验收（例如 `8011`），通过后再切回生产 `8001`。
-
-```bash
-MODEL_NAME=bge-reranker-large-int8-ov
-MODEL_DIR=~/models/BAAI/<your-rerank-model-dir>
-PORT=8011
-
-sudo docker run -d --rm --name ovms-rerank-candidate \
-  -p ${PORT}:${PORT} \
-  --device /dev/accel \
-  --group-add=$(stat -c "%g" /dev/dri/render* | head -1) \
-  -v /home/q/models:/models:ro \
-  openvino/model_server:latest-gpu \
-  --rest_port ${PORT} \
-  --model_name ${MODEL_NAME} \
-  --model_path ${MODEL_DIR} \
-  --task rerank
-```
-
-若是 CPU-only 环境，去掉 `--device` 与 `--group-add` 即可。
-
-### 9.3 冒烟验证（必须通过）
-
-```bash
-PORT=8011
-MODEL_NAME=bge-reranker-large-int8-ov
-
-curl -sS http://127.0.0.1:${PORT}/v3/models/${MODEL_NAME}
-curl -sS -X POST http://127.0.0.1:${PORT}/v3/rerank \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "model":"'"${MODEL_NAME}"'",
-    "query":"什么是RAG",
-    "documents":["RAG是检索增强生成","天气很好"]
-  }'
-```
-
-通过标准：
-
-- 非 4xx/5xx。
-- 返回 JSON 包含 `results`。
-- `results` 中每项包含 `index` 与 `relevance_score`。
-
-失败判定与动作：
-
-- 若报 `Port for tensor name logits was not found`：当前导出不兼容，停止接入，换导出。
-- 若报 `Wrong endpoint` 或 404 `/v3/rerank`：检查端口是否误指向 chat 实例。
-
-### 9.4 切换到生产 8001
-
-1. 停掉旧 8001 rerank 容器。
-2. 用相同参数在 `8001` 启动新导出。
-3. 保持 RAGFlow 里 rerank 仍指向：
-   - `bge-reranker-large-int8-ov@OVMS-Rerank@OpenAI-API-Compatible`
-4. 重启 RAGFlow：
-
-```bash
-cd ~/ragflow/docker
-sudo docker restart docker-ragflow-cpu-1
-```
-
-### 9.5 上线后回归检查
-
-```bash
-cd ~/ragflow/docker
-
-# 1) 配置面确认（tenant/dialog/search）
-sudo docker exec docker-mysql-1 mysql -uroot -pinfini_rag_flow -Drag_flow -e "SELECT id,rerank_id FROM tenant;"
-sudo docker exec docker-mysql-1 mysql -uroot -pinfini_rag_flow -Drag_flow -e "SELECT id,name,rerank_id FROM dialog WHERE tenant_id='c2fd45ae843d11f1a059698ef4239658';"
-sudo docker exec docker-mysql-1 mysql -uroot -pinfini_rag_flow -Drag_flow -e "SELECT id,name,search_config FROM search WHERE tenant_id='c2fd45ae843d11f1a059698ef4239658' ORDER BY update_time DESC LIMIT 20;"
-
-# 2) 日志面确认（不再出现 8002/rerank 与 logits not found）
-sudo docker logs --tail 200 docker-ragflow-cpu-1 | egrep "(/v3/rerank|logits|Wrong endpoint|404 Client Error)"
-```
-
-判定原则：
-
-- 只要出现 `8002/v3/rerank`，说明仍有旧配置残留（通常是 `search_config`）。
-- 只要出现 `logits not found`，说明当前 rerank 导出仍不兼容，不能上线。
-
-本机实测结果（2026-07-21）：
-
-- 按本节流程替换并验收后，rerank 已正常可用。
-
-附：仓库内自检脚本
-
-- 路径：`tools/scripts/ovms_rerank_smoketest.sh`
-- 用法：
-
-```bash
-bash tools/scripts/ovms_rerank_smoketest.sh \
-  --port 8011 \
-  --model bge-reranker-large-int8-ov \
-  --query "什么是RAG" \
-  --doc "RAG是检索增强生成" \
-  --doc "天气很好"
-```
