@@ -129,7 +129,25 @@ curl -I http://127.0.0.1:8080
 
 若以上 4 个检查均返回正常，即可在浏览器里打开http://127.0.0.1:8080 RAGFlow Web 中直接使用 OVMS 模型。
 
-### 0.4 查看GPU，NPU使用情况（Option）
+### 0.4 在RAGFlow Web配置Model Providers
+
+（1）依次填写Qwen3.6-35B-A3B-ov，http://host.docker.internal:8002/v3，unused。并补充list models
+
+<img width="330" height="332" alt="image" src="https://github.com/user-attachments/assets/e51f2f6d-2f6b-40c1-be03-65560dfb9fb1" />
+
+<img width="221" height="268" alt="image" src="https://github.com/user-attachments/assets/8c276732-7635-4696-819c-bae177068926" />
+
+（2）依次填写bge-large-zh-v1.5-int8-ov，http://host.docker.internal:8000/v3/embedding，unused。并补充list models
+
+<img width="329" height="332" alt="image" src="https://github.com/user-attachments/assets/240bd568-f43d-41c7-980d-4c08c9ac8153" />
+
+<img width="221" height="266" alt="image" src="https://github.com/user-attachments/assets/0870c6b1-9364-47c3-bbd4-c3c3d5d10fff" />
+
+（3）依次填写bge-reranker-large-int8-ov，http://host.docker.internal:8001/v3/rerank，unused。并补充list models
+
+<img width="215" height="266" alt="image" src="https://github.com/user-attachments/assets/d6cd5d45-f3b9-4440-a1a4-55fd7e08e197" />
+
+### 0.5 查看GPU，NPU使用情况（Option）
 查看GPU状态。
 ```
 sudo apt install xpu-smi
