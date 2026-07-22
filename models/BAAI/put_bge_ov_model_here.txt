@@ -1,0 +1,5 @@
+put models here:
+
+bge-large-zh-v1.5
+
+bge-reranker-large
