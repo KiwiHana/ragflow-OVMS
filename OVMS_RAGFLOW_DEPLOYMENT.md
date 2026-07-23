@@ -146,7 +146,6 @@ curl -I http://127.0.0.1:8080
 （3）依次填写bge-reranker-large-int8-ov，http://host.docker.internal:8001/v3，unused。并补充list models
 <img width="330" height="335" alt="image" src="https://github.com/user-attachments/assets/bc861ea7-8ab1-4430-939c-d2b602d2325e" />
 
-
 <img width="215" height="266" alt="image" src="https://github.com/user-attachments/assets/d6cd5d45-f3b9-4440-a1a4-55fd7e08e197" />
 
 ### 0.5 查看GPU，NPU使用情况（Option）
