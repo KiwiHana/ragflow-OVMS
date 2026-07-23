@@ -67,6 +67,8 @@ https://www.modelscope.cn/models/kiwicoco/bge-reranker-large/files
 
 ### 0.2 启动三路 OVMS（先确认服务可用）
 
+Qwen3.6-35B-A3B-ov运行在GPU。bge-large-zh-v1.5和bge-reranker-large运行在NPU。
+
 ```bash
 cd ~/models && ./run-bge-large-zh-v1.5-docker.sh
 cd ~/models && ./run-bge-reranker-large-docker.sh
