@@ -1,6 +1,6 @@
 # RAGFlow + OVMS 部署手册
 
-Date: 2026-07-21
+Date: 2026-07-23
 
 本文档基于Ubuntu 24.04（kernel大于等于6.17）实测整理，目标是完成：
 
@@ -10,7 +10,7 @@ Date: 2026-07-21
 
 ## 0. Quick start
 
-### 0.1 新机器准备（一次性）
+### 0.1 准备
 
 目标：在一台全新 Ubuntu 机器上，让 RAGFlow 在 Web UI 中正确看到并使用 OVMS 的 Chat / Embedding / Rerank。
 
