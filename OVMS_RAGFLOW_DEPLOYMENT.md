@@ -148,6 +148,10 @@ curl -I http://127.0.0.1:8080
 
 <img width="215" height="266" alt="image" src="https://github.com/user-attachments/assets/d6cd5d45-f3b9-4440-a1a4-55fd7e08e197" />
 
+
+<img width="771" height="377" alt="image" src="https://github.com/user-attachments/assets/928e74f5-c8b9-4083-8230-814784cce1e2" />
+
+
 ### 0.5 查看GPU，NPU使用情况（Option）
 查看GPU状态。
 ```
