@@ -100,11 +100,7 @@ sudo docker exec docker-ragflow-cpu-1 sh -lc 'curl -sS --max-time 8 http://host.
 
 ### 0.4 在 RAGFlow UI 填写 OpenAI-API-Compatible（关键）
 
-首次使用需要注册，登录后先点击右上角用户头像，左侧栏选Model providers，右侧搜索 `OpenAI-API-Compatible`，并分别添加 3 个实例（推荐）：
-
-<img width="330" height="335" alt="image" src="https://github.com/user-attachments/assets/bc861ea7-8ab1-4430-939c-d2b602d2325e" />
-
-<img width="771" height="377" alt="image" src="https://github.com/user-attachments/assets/928e74f5-c8b9-4083-8230-814784cce1e2" />
+首次使用需要注册，登录后先点击右上角用户头像，左侧栏选Model providers，右侧搜索 `OpenAI-API-Compatible`，并分别添加 3 个实例，最后在set default models选择LLM，Embedding，Rerank模型。
 
 1. Chat 实例
 
@@ -114,6 +110,7 @@ sudo docker exec docker-ragflow-cpu-1 sh -lc 'curl -sS --max-time 8 http://host.
 - API Key: `unused`
 - Model name: `Qwen3.6-35B-A3B-ov`
 - Model type: `chat`
+<img width="331" height="335" alt="image" src="https://github.com/user-attachments/assets/8c815851-6aa3-4370-a8e7-7060c77d9c41" />
 
 2. Embedding 实例
 
@@ -124,6 +121,9 @@ sudo docker exec docker-ragflow-cpu-1 sh -lc 'curl -sS --max-time 8 http://host.
 - Model name: `bge-large-zh-v1.5-int8-ov`
 - Model type: `embedding`
 
+<img width="331" height="335" alt="image" src="https://github.com/user-attachments/assets/0a25207c-ea6e-425f-872e-9b4ea35b2db4" />
+<img width="218" height="266" alt="image" src="https://github.com/user-attachments/assets/4d1b05e6-351a-4af0-b3d1-044558f39f9f" />
+
 3. Rerank 实例
 
 - Provider: `OpenAI-API-Compatible`
@@ -132,6 +132,10 @@ sudo docker exec docker-ragflow-cpu-1 sh -lc 'curl -sS --max-time 8 http://host.
 - API Key: `unused`
 - Model name: `bge-reranker-large-int8-ov`
 - Model type: `rerank`
+
+<img width="330" height="335" alt="image" src="https://github.com/user-attachments/assets/bc861ea7-8ab1-4430-939c-d2b602d2325e" />
+
+<img width="771" height="377" alt="image" src="https://github.com/user-attachments/assets/928e74f5-c8b9-4083-8230-814784cce1e2" />
 
 以上模型 ID 是使用三段格式：
 
