@@ -100,7 +100,7 @@ sudo docker exec docker-ragflow-cpu-1 sh -lc 'curl -sS --max-time 8 http://host.
 
 ### 0.4 在 RAGFlow UI 填写 OpenAI-API-Compatible（关键）
 
-首次使用需要注册，登录后先点击右上角用户头像，左侧栏选Model providers，右侧搜索 `OpenAI-API-Compatible`，并分别添加 3 个实例，最后在set default models选择LLM，Embedding，Rerank模型。
+首次使用需要注册，登录后先点击右上角用户头像，左侧栏选Model providers，右侧搜索 `OpenAI-API-Compatible`，并分别添加 3 个实例，最后在set default models选择LLM，Embedding，Rerank模型。OVMS到此部署完毕，可以开始使用RAGFLOW里的功能了。
 
 1. Chat 实例
 
@@ -170,19 +170,7 @@ cd ~/ragflow/docker
 sudo docker compose -f docker-compose.yml ps
 ```
 
-1) 只停止 RAGFlow 应用容器（推荐，最安全，不影响 MySQL/ES/Redis/MinIO）
-
-```bash
-sudo docker stop docker-ragflow-cpu-1
-```
-
-恢复：
-
-```bash
-sudo docker start docker-ragflow-cpu-1
-```
-
-2) 停止整套 compose 服务（容器保留，数据不删）
+1) 停止整套 compose 服务（容器保留，数据不删）
 
 ```bash
 cd ~/ragflow/docker
@@ -196,7 +184,7 @@ cd ~/ragflow/docker
 sudo docker compose -f docker-compose.yml up -d
 ```
 
-3) 下线并删除容器（数据卷默认保留）
+2) 下线并删除容器（数据卷默认保留）
 
 ```bash
 cd ~/ragflow/docker
@@ -210,7 +198,7 @@ cd ~/ragflow/docker
 sudo docker compose -f docker-compose.yml up -d
 ```
 
-4) 下线并删除容器 + 数据卷（高风险，会清空业务数据）
+3) 下线并删除容器 + 数据卷（高风险，会清空业务数据）
 
 ```bash
 cd ~/ragflow/docker
@@ -231,7 +219,7 @@ curl -I http://127.0.0.1:8080 || true
 - 只停应用时，`docker-ragflow-cpu-1` 不在运行，其它基础组件仍可运行；
 - `http://127.0.0.1:8080` 无法访问（或连接被拒绝）。
 
-## 1. 参考来源与当前结论
+## 1. 部署文件介绍
 
 给出的实际启动方式是三路 OVMS 服务：
 
