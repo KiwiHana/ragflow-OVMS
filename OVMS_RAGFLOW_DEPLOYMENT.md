@@ -35,7 +35,7 @@ python -c "from openvino import Core; print(Core().available_devices)"
 ```bash
 cd ~
 git clone https://github.com/KiwiHana/ragflow-OVMS.git ragflow
-cp -r ~/ragflow/models ~/models
+cp -r ~/ragflow/models ~/
 cd ~/models
 ```
 下载Qwen3.6-35B-A3B-int4-ov到~/models，并
