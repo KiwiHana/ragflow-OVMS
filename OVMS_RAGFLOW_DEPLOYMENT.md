@@ -28,7 +28,7 @@ pip install openvino
 python -c "from openvino import Core; print(Core().available_devices)"
 ```
 
-期望至少包含 `CPU`，若有 iGPU/NPU 则显示 `GPU` / `NPU`。
+期望至少包含 `CPU`，若有 iGPU/NPU 则显示 `GPU` / `NPU`。如果没有GPU或者NPU，可以参考指南来安装：https://zhuanlan.zhihu.com/p/2032752671648658519
 
 （2）代码与模型目录
 
@@ -37,6 +37,7 @@ cd ~
 git clone https://github.com/KiwiHana/ragflow-OVMS.git ragflow
 cp -r ~/ragflow/models ~/
 cd ~/models
+sudo chmod -R 777 run*.sh
 ```
 下载Qwen3.6-35B-A3B-int4-ov到~/models，并
 ```bash
