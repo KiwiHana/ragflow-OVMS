@@ -4,7 +4,7 @@ Date: 2026-07-23
 
 本文档基于Ubuntu 24.04（kernel大于等于6.17）实测整理，目标是完成：
 
-- 启动 OVMS 模型服务（Embedding / Rerank / Chat）
+- 启动 OVMS 模型服务（Embedding on GPU / Rerank on NPU / Chat on NPU）
 - 让 RAGFlow 正确接入 OVMS（多端口）
 - 验证 RAGFlow + OVMS 可用
 
