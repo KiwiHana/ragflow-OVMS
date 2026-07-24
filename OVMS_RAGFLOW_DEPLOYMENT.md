@@ -100,7 +100,7 @@ sudo docker exec docker-ragflow-cpu-1 sh -lc 'curl -sS --max-time 8 http://host.
 
 ### 0.4 在 RAGFlow UI 填写 OpenAI-API-Compatible（关键）
 
-首先点击右上角用户，左侧栏选Model providers，只使用 `OpenAI-API-Compatible`，并分别添加 3 个实例（推荐）：
+首次使用需要注册，登录后先点击右上角用户头像，左侧栏选Model providers，右侧搜索 `OpenAI-API-Compatible`，并分别添加 3 个实例（推荐）：
 
 <img width="330" height="335" alt="image" src="https://github.com/user-attachments/assets/bc861ea7-8ab1-4430-939c-d2b602d2325e" />
 
@@ -133,7 +133,7 @@ sudo docker exec docker-ragflow-cpu-1 sh -lc 'curl -sS --max-time 8 http://host.
 - Model name: `bge-reranker-large-int8-ov`
 - Model type: `rerank`
 
-默认模型 ID 建议使用三段格式：
+以上模型 ID 是使用三段格式：
 
 - chat: `Qwen3.6-35B-A3B-ov@OVMS-Chat@OpenAI-API-Compatible`
 - embedding: `bge-large-zh-v1.5-int8-ov@OVMS-Embedding@OpenAI-API-Compatible`
